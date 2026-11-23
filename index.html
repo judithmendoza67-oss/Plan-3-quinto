@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizarra Digital Interactiva - Colegio Montano</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        montano: {
+                            blue: '#1269A8',
+                            yellow: '#F7D615',
+                            teal: '#54887D',
+                            lightblue: '#88B5C7',
+                            olive: '#A6B046',
+                            bg: '#F2F5E9'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a232a;
+            color: #2d3748;
+        }
+        .board-frame {
+            background-color: #1269A8;
+            border: 10px solid #F7D615;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .tab-btn.active {
+            background-color: #F2F5E9;
+            color: #1269A8;
+            border-bottom: 4px solid #F7D615;
+            font-weight: 700;
+        }
+        .tab-btn {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-btn:hover:not(.active) {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out, opacity 0.3s ease-out;
+            opacity: 0;
+        }
+        .accordion-content.open {
+            max-height: 1000px;
+            opacity: 1;
+            transition: max-height 0.5s ease-in, opacity 0.4s ease-in;
+        }
+        .board-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .board-content::-webkit-scrollbar-track {
+            background: #e2e8f0;
+            border-radius: 4px;
+        }
+        .board-content::-webkit-scrollbar-thumb {
+            background: #54887D;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen p-2 md:p-4 flex justify-center items-center">
+
+    <!-- CONTENEDOR PRINCIPAL DE LA PIZARRA DIGITAL -->
+    <div id="boardContainer" class="board-frame w-full max-w-7xl rounded-2xl overflow-hidden flex flex-col min-h-[92vh]">
+        
+        <!-- ENCABEZADO INSTITUCIONAL -->
+        <header class="bg-montano-blue p-4 flex flex-wrap justify-between items-center gap-4 border-b-2 border-montano-yellow">
+            <div class="flex items-center gap-4">
+                <div class="bg-white p-1.5 rounded-lg shadow-md flex items-center justify-center">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQyEop0yf6lZ7Jk9MILZxF1rBj4Oqs5esyhIQ&s" alt="Logo Colegio Montano" class="h-10 md:h-12 object-contain" onerror="this.onerror=null; this.src='https://placehold.co/150x50/1269A8/FFFFFF?text=Colegio+Montano'">
+                </div>
+                <div>
+                    <h1 class="text-white text-lg md:text-2xl font-bold tracking-wide">COLEGIO MONTANO</h1>
+                    <p class="text-montano-yellow text-xs md:text-sm font-semibold">Plan Diario de Clase Presencial | Pizarra Digital Interactiva</p>
+                </div>
+            </div>
+
+            <!-- BOTÓN PANTALLA COMPLETA Y METADATOS -->
+            <div class="flex items-center gap-3">
+                <button onclick="toggleFullscreen()" class="bg-montano-yellow hover:bg-yellow-400 text-montano-blue font-bold px-4 py-2 rounded-lg shadow-md flex items-center gap-2 text-xs md:text-sm transition-transform active:scale-95">
+                    <i class="fa-solid fa-expand" id="fullscreenIcon"></i>
+                    <span id="fullscreenText" class="hidden md:inline">Pantalla Completa</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- SUBENCABEZADO DE INFORMACIÓN GENERAL DEL PLAN -->
+        <section class="bg-montano-blue/95 text-white px-4 py-2 border-b border-white/20 flex flex-wrap justify-between text-xs md:text-sm gap-2">
+            <div><span class="text-montano-yellow font-bold">Curso:</span> Comunicación y Lenguaje</div>
+            <div><span class="text-montano-yellow font-bold">Tema:</span> La Ortografía</div>
+            <div><span class="text-montano-yellow font-bold">Grado:</span> 5to Primaria</div>
+            <div><span class="text-montano-yellow font-bold">Unidad/Plan:</span> I Unidad / Plan 3</div>
+            <div><span class="text-montano-yellow font-bold">Fecha:</span> 2da Semána de Enero</div>
+            <div><span class="text-montano-yellow font-bold">Docente:</span> Cecilia Mendoza</div>
+        </section>
+
+        <!-- ENFOQUE PEDAGÓGICO E INSTITUCIONAL (DATOS CNB Y HÁBITOS) -->
+        <section class="bg-white px-4 py-3 border-b border-gray-200 text-xs md:text-sm space-y-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="p-2 bg-montano-bg rounded border-l-4 border-montano-blue">
+                    <span class="font-bold text-montano-blue block">Competencia CNB:</span>
+                    Redacta textos informativos y literarios utilizando la normativa ortográfica y gramatical del idioma.
+                </div>
+                <div class="p-2 bg-montano-bg rounded border-l-4 border-montano-teal">
+                    <span class="font-bold text-montano-teal block">Logro de Aprendizaje:</span>
+                    Aplica correctamente las normas de acentuación, uso de grafías y puntuación para resolver dudas en textos.
+                </div>
+                <div class="p-2 bg-montano-bg rounded border-l-4 border-montano-olive">
+                    <span class="font-bold text-montano-olive block">Hábitos Montano:</span>
+                    <em>Comenzar con un fin en mente</em> y <em>Buscar primero entender, luego ser entendido</em>.
+                </div>
+                <div class="p-2 bg-montano-bg rounded border-l-4 border-montano-yellow">
+                    <span class="font-bold text-gray-800 block">Competencias Clave:</span>
+                    Pensamiento crítico, comunicación efectiva, trabajo en equipo y atención al detalle.
+                </div>
+            </div>
+            <div class="text-xs text-gray-600 flex flex-wrap gap-4 pt-1">
+                <span><strong>Recursos:</strong> Guía interactiva N° 3, cuadernos, pizarra digital, tarjetas de colores y ruleta interactiva.</span>
+                <span><strong>Evaluación:</strong> Inicial (Exploratoria), Formativa (Lista de cotejo/Solucionarios) y Sumativa (Plenaria).</span>
+            </div>
+        </section>
+
+        <!-- PESTAÑAS DE LA SECUENCIA DIDÁCTICA -->
+        <nav class="bg-montano-blue px-4 pt-2 flex flex-wrap gap-1 md:gap-2 border-b border-white/20">
+            <button onclick="switchTab('tab1')" id="nav-tab1" class="tab-btn active px-4 py-2.5 rounded-t-xl font-medium text-xs md:text-sm flex items-center gap-2">
+                <i class="fa-solid fa-rocket"></i> I. Introducción Motivante (5 min)
+            </button>
+            <button onclick="switchTab('tab2')" id="nav-tab2" class="tab-btn px-4 py-2.5 rounded-t-xl font-medium text-xs md:text-sm flex items-center gap-2">
+                <i class="fa-solid fa-user-pen"></i> II. Trabajo Individual (20 min)
+            </button>
+            <button onclick="switchTab('tab3')" id="nav-tab3" class="tab-btn px-4 py-2.5 rounded-t-xl font-medium text-xs md:text-sm flex items-center gap-2">
+                <i class="fa-solid fa-users"></i> III. Trabajo Cooperativo (30 min)
+            </button>
+            <button onclick="switchTab('tab4')" id="nav-tab4" class="tab-btn px-4 py-2.5 rounded-t-xl font-medium text-xs md:text-sm flex items-center gap-2">
+                <i class="fa-solid fa-gamepad"></i> IV. Plenaria y Juego (15 min)
+            </button>
+            <button onclick="switchTab('tab5')" id="nav-tab5" class="tab-btn px-4 py-2.5 rounded-t-xl font-medium text-xs md:text-sm flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check"></i> Evaluación / Rúbrica
+            </button>
+        </nav>
+
+        <!-- ÁREA DE TRABAJO Y CONTENIDO DE LAS PESTAÑAS -->
+        <main class="bg-montano-bg p-4 md:p-6 flex-1 overflow-y-auto board-content max-h-[65vh]">
+            
+            <!-- PESTAÑA I: INTRODUCCIÓN MOTIVANTE -->
+            <section id="sec-tab1" class="space-y-6">
+                <div class="border-l-8 border-montano-yellow pl-4 py-1">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-montano-blue">I. Introducción Motivante (~5 minutos)</h2>
+                    <p class="text-gray-600 text-xs md:text-sm">Activación de conocimientos previos y conexión con el hábito Montano: <em>"Comenzar con un fin en mente"</em>.</p>
+                </div>
+
+                <!-- Dinámica "¡Ortografía al Rescate!" -->
+                <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-montano-blue space-y-4">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-montano-yellow p-3 rounded-full text-montano-blue text-xl font-bold">
+                            <i class="fa-solid fa-burst"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg text-montano-blue">Dinámica Rápida: "¿Qué dijo realmente?"</h3>
+                            <p class="text-xs text-gray-600">Recreo cerebral para demostrar cómo una coma o tilde cambia el destino de una frase.</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs md:text-sm">
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <span class="font-bold text-red-700 block mb-1">Caso A: Sin puntuación</span>
+                            <p class="text-gray-800 text-base font-semibold">"Vamos a comer niños"</p>
+                            <p class="text-gray-600 text-xs mt-2">¿Qué interpreta la clase? (¡El gigante se comerá a los niños!).</p>
+                        </div>
+                        <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                            <span class="font-bold text-green-700 block mb-1">Caso B: Con Coma Vocativa</span>
+                            <p class="text-gray-800 text-base font-semibold">"Vamos a comer, niños"</p>
+                            <p class="text-gray-600 text-xs mt-2">¿Qué transmite el texto? (El llamado cariñoso a la mesa).</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-montano-lightblue/15 p-4 rounded-lg border border-montano-lightblue">
+                        <h4 class="font-bold text-montano-blue text-xs md:text-sm mb-2"><i class="fa-solid fa-question-circle"></i> Preguntas Exploratorias para la Clase:</h4>
+                        <ul class="list-disc pl-5 space-y-1 text-xs text-gray-700">
+                            <li>¿Qué es la ortografía y por qué creen que existen reglas para escribir?</li>
+                            <li>¿Cuáles son los 3 pilares principales de la ortografía que repasamos en la guía? (Grafías, Acentuación y Puntuación/Mayúsculas).</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PESTAÑA II: TRABAJO INDIVIDUAL -->
+            <section id="sec-tab2" class="hidden space-y-6">
+                <div class="border-l-8 border-montano-blue pl-4 py-1">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-montano-blue">II. Trabajo Individual (20 minutos)</h2>
+                    <p class="text-gray-600 text-xs md:text-sm">Resolución práctica de ejercicios de la Guía N° 3 con solución oculta desplegable para autoevaluación.</p>
+                </div>
+
+                <!-- GUÍA PRÁCTICA CON ACORDEONES -->
+                <div class="space-y-4">
+                    <p class="text-xs font-semibold text-gray-700">Resuelve cada reto en tu cuaderno y luego desplega el botón para verificar tus respuestas:</p>
+
+                    <!-- Reto 1 -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-montano-blue text-white text-xs px-2.5 py-0.5 rounded font-bold">Reto 1: Uso de Grafías</span>
+                                <h3 class="font-bold text-sm text-gray-800 mt-2">Completa con N o M y corrige las mayúsculas:</h3>
+                                <p class="text-xs text-gray-600 mt-1">"el bo___bero carlos apagó el fuego en el cam___amento de quetzaltenango."</p>
+                            </div>
+                            <button onclick="toggleAccordion('acc1')" class="bg-montano-teal text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-teal-700 transition">
+                                Solución / Orientación
+                            </button>
+                        </div>
+                        <div id="acc1" class="accordion-content mt-3 text-xs bg-montano-bg p-3 rounded-lg border border-montano-teal text-gray-700">
+                            <strong>Respuesta Correcta:</strong> "<strong>E</strong>l bo<strong>m</strong>bero <strong>C</strong>arlos apagó el fuego en el cam<strong>p</strong>amento de <strong>Q</strong>uetzaltenango."<br>
+                            <span class="text-montano-blue">Regla:</span> M antes de P y B; mayúsculas al inicio de oración y nombres propios de personas y lugares.
+                        </div>
+                    </div>
+
+                    <!-- Reto 2 -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-montano-teal text-white text-xs px-2.5 py-0.5 rounded font-bold">Reto 2: Clasificación de Acentuación</span>
+                                <h3 class="font-bold text-sm text-gray-800 mt-2">Identifica la sílaba tónica y justifica la tilde:</h3>
+                                <p class="text-xs text-gray-600 mt-1">Palabras: <strong>café</strong>, <strong>árbol</strong>, <strong>música</strong>.</p>
+                            </div>
+                            <button onclick="toggleAccordion('acc2')" class="bg-montano-teal text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-teal-700 transition">
+                                Solución / Orientación
+                            </button>
+                        </div>
+                        <div id="acc2" class="accordion-content mt-3 text-xs bg-montano-bg p-3 rounded-lg border border-montano-teal text-gray-700">
+                            <strong>Respuesta Correcta:</strong><br>
+                            - <strong>café:</strong> Aguda (tilde porque termina en vocal).<br>
+                            - <strong>árbol:</strong> Grave (tilde porque termina en L, consonante distinta de N o S).<br>
+                            - <strong>música:</strong> Esdrújula (¡todas las esdrújulas se tildan!).
+                        </div>
+                    </div>
+
+                    <!-- Reto 3 -->
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-montano-olive text-white text-xs px-2.5 py-0.5 rounded font-bold">Reto 3: Homófonos</span>
+                                <h3 class="font-bold text-sm text-gray-800 mt-2">Selecciona la palabra correcta según el contexto:</h3>
+                                <p class="text-xs text-gray-600 mt-1">a) Juan (tuvo / tubo) una excelente nota en el examen.<br>b) El (tubo / tuvo) de agua está rajado.</p>
+                            </div>
+                            <button onclick="toggleAccordion('acc3')" class="bg-montano-teal text-white text-xs px-3 py-1.5 rounded-lg font-semibold hover:bg-teal-700 transition">
+                                Solución / Orientación
+                            </button>
+                        </div>
+                        <div id="acc3" class="accordion-content mt-3 text-xs bg-montano-bg p-3 rounded-lg border border-montano-teal text-gray-700">
+                            <strong>Respuesta Correcta:</strong><br>
+                            a) <strong>tuvo</strong> (del verbo <em>tener</em>, se escribe con V).<br>
+                            b) <strong>tubo</strong> (objeto cilíndrico, se escribe con B).
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PESTAÑA III: TRABAJO COOPERATIVO -->
+            <section id="sec-tab3" class="hidden space-y-6">
+                <div class="border-l-8 border-montano-teal pl-4 py-1">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-montano-blue">III. Trabajo Cooperativo / En Equipo (30 minutos)</h2>
+                    <p class="text-gray-600 text-xs md:text-sm">Aplicación del hábito Montano: <em>"Sinergizar"</em> e <em>"Pensar Ganar-Ganar"</em>.</p>
+                </div>
+
+                <!-- Roles de Equipo y Desafío Grupal -->
+                <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-montano-teal space-y-4">
+                    <h3 class="font-bold text-lg text-montano-teal flex items-center gap-2">
+                        <i class="fa-solid fa-people-group"></i> Organización de Equipos (4 Integrantes)
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="p-3 bg-montano-blue/10 border border-montano-blue rounded-lg">
+                            <span class="font-bold text-montano-blue block">1. Coordinador/a</span>
+                            Mantiene el enfoque del grupo y el tiempo de trabajo.
+                        </div>
+                        <div class="p-3 bg-montano-yellow/20 border border-montano-yellow rounded-lg">
+                            <span class="font-bold text-gray-800 block">2. Secretario/a Ortográfico</span>
+                            Registra las soluciones y verifica las tildes del equipo.
+                        </div>
+                        <div class="p-3 bg-montano-teal/10 border border-montano-teal rounded-lg">
+                            <span class="font-bold text-montano-teal block">3. Revisor/a Critico</span>
+                            Compara las reglas ortográficas del CNB aplicadas.
+                        </div>
+                        <div class="p-3 bg-montano-olive/10 border border-montano-olive rounded-lg">
+                            <span class="font-bold text-montano-olive block">4. Expositor/a</span>
+                            Presentará las conclusiones del equipo en la Plenaria.
+                        </div>
+                    </div>
+
+                    <!-- Consigna del Reto Grupal -->
+                    <div class="bg-montano-bg p-4 rounded-xl border border-gray-300">
+                        <h4 class="font-bold text-montano-blue text-sm mb-2">Desafío Grupal: "El Detector de Errores y Matriz Ortográfica"</h4>
+                        <p class="text-xs text-gray-700 leading-relaxed mb-3">
+                            Cada equipo recibirá un párrafo breve plagado de 6 errores ortográficos mezclados (grafías, acentuación y signos). Deben reescribirlo correctamente en su cartel/hoja y crear una **Matriz Justificativa** en 3 columnas:
+                        </p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs font-semibold text-center">
+                            <div class="bg-white p-2 rounded shadow-sm border border-gray-200">1. Palabra Errónea</div>
+                            <div class="bg-white p-2 rounded shadow-sm border border-gray-200">2. Corrección Ortográfica</div>
+                            <div class="bg-white p-2 rounded shadow-sm border border-gray-200">3. Regla / Por qué se corrige</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PESTAÑA IV: PLENARIA Y JUEGO INTERACTIVO -->
+            <section id="sec-tab4" class="hidden space-y-6">
+                <div class="border-l-8 border-montano-olive pl-4 py-1">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-montano-blue">IV. Plenaria y Juego Interactivo (15 minutos)</h2>
+                    <p class="text-gray-600 text-xs md:text-sm">Cierre dinámico de la sesión con juego interactivo de Pasapalabra Ortográfico.</p>
+                </div>
+
+                <!-- JUEGO INTERACTIVO: PASAPALABRA ORTOGRÁFICO -->
+                <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-montano-olive space-y-4">
+                    <div class="flex justify-between items-center flex-wrap gap-2">
+                        <div>
+                            <h3 class="font-bold text-lg text-montano-blue flex items-center gap-2">
+                                <i class="fa-solid fa-gamepad text-montano-yellow"></i> Trivia Express: "Pasapalabra Ortográfico"
+                            </h3>
+                            <p class="text-xs text-gray-600">Presiona una letra para lanzar la pregunta a los expositores del equipo.</p>
+                        </div>
+                        <span class="text-xs bg-montano-yellow text-montano-blue font-extrabold px-3 py-1 rounded-full">
+                            Puntaje: <span id="gameScore">0</span> pts
+                        </span>
+                    </div>
+
+                    <!-- Panel de Preguntas Interactivas -->
+                    <div id="gameCard" class="bg-montano-bg p-4 rounded-xl border border-montano-lightblue text-center space-y-3">
+                        <span id="gameLetter" class="inline-block bg-montano-blue text-white font-extrabold text-2xl w-12 h-12 rounded-full flex items-center justify-center mx-auto shadow-md">
+                            A
+                        </span>
+                        <p id="gameQuestion" class="text-xs md:text-sm font-semibold text-gray-800">
+                            Con la A: Palabra cuya sílaba tónica es la última y se tilda si termina en N, S o vocal.
+                        </p>
+                        <div class="flex justify-center gap-2">
+                            <button onclick="checkAnswer(true)" class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                                <i class="fa-solid fa-check"></i> Correcto
+                            </button>
+                            <button onclick="checkAnswer(false)" class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                                <i class="fa-solid fa-xmark"></i> Incorrecto / Pasapalabra
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Letras -->
+                    <div class="flex flex-wrap gap-1.5 justify-center pt-2">
+                        <button onclick="loadQuestion(0)" class="bg-montano-blue text-white w-8 h-8 rounded-lg font-bold text-xs hover:bg-blue-700">A</button>
+                        <button onclick="loadQuestion(1)" class="bg-montano-blue text-white w-8 h-8 rounded-lg font-bold text-xs hover:bg-blue-700">B</button>
+                        <button onclick="loadQuestion(2)" class="bg-montano-blue text-white w-8 h-8 rounded-lg font-bold text-xs hover:bg-blue-700">C</button>
+                        <button onclick="loadQuestion(3)" class="bg-montano-blue text-white w-8 h-8 rounded-lg font-bold text-xs hover:bg-blue-700">E</button>
+                        <button onclick="loadQuestion(4)" class="bg-montano-blue text-white w-8 h-8 rounded-lg font-bold text-xs hover:bg-blue-700">G</button>
+                        <button onclick="loadQuestion(5)" class="bg-montano-blue text-white w-8 h-8 rounded-lg font-bold text-xs hover:bg-blue-700">H</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PESTAÑA V: EVALUACIÓN / RÚBRICA DE LA PLENARIA -->
+            <section id="sec-tab5" class="hidden space-y-6">
+                <div class="border-l-8 border-montano-blue pl-4 py-1">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-montano-blue">Instrumento de Evaluación: Lista de Cotejo / Rúbrica de Plenaria</h2>
+                    <p class="text-gray-600 text-xs md:text-sm">Evaluación en tiempo real del desempeño de cada equipo durante la plenaria.</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl shadow-md border border-gray-200 overflow-x-auto">
+                    <table class="w-full text-left text-xs md:text-sm">
+                        <thead class="bg-montano-blue text-white border-b-2 border-montano-yellow">
+                            <tr>
+                                <th class="p-3">Criterios de Evaluación</th>
+                                <th class="p-3 text-center">Excelente (3 pts)</th>
+                                <th class="p-3 text-center">Satisfactorio (2 pts)</th>
+                                <th class="p-3 text-center">En Proceso (1 pt)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="p-3 font-semibold text-gray-800">1. Dominio del Tema y Reglas Ortográficas</td>
+                                <td class="p-3 text-gray-600 text-xs">Explica con claridad la regla ortográfica correspondiente al error detectado.</td>
+                                <td class="p-3 text-gray-600 text-xs">Identifica el error pero titubea al justificar la regla ortográfica.</td>
+                                <td class="p-3 text-gray-600 text-xs">Identifica el error pero no logra explicar la regla.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-gray-800">2. Lógica y Procedimiento en la Matriz</td>
+                                <td class="p-3 text-gray-600 text-xs">Estructura la matriz en 3 columnas de manera impecable y coherente.</td>
+                                <td class="p-3 text-gray-600 text-xs">Presenta la matriz completa con leves omisiones en la justificación.</td>
+                                <td class="p-3 text-gray-600 text-xs">Matriz incompleta o confusa.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-gray-800">3. Trabajo Colaborativo y Hábitos Montano</td>
+                                <td class="p-3 text-gray-600 text-xs">Todos los integrantes cumplieron sus roles con equidad (Sinergizar).</td>
+                                <td class="p-3 text-gray-600 text-xs">La mayoría del equipo participó en la presentación.</td>
+                                <td class="p-3 text-gray-600 text-xs">Solo un integrante presentó todo el trabajo.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-semibold text-gray-800">4. Respuesta a Preguntas de la Plenaria</td>
+                                <td class="p-3 text-gray-600 text-xs">Responde con solvencia a las preguntas planteadas por la docente o compañeros.</td>
+                                <td class="p-3 text-gray-600 text-xs">Responde parcialmente a las preguntas planteadas.</td>
+                                <td class="p-3 text-gray-600 text-xs">No logra responder a las preguntas del auditorio.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- PIE DE PAGINA PIZARRA -->
+        <footer class="bg-montano-blue p-3 text-center text-white text-xs border-t border-montano-yellow/50">
+            Colegio Montano &copy; 2026 - Pizarra Digital Interactiva de Clase
+        </footer>
+    </div>
+
+    <!-- LÓGICA DE INTERACCIÓN DE LA PIZARRA DIGITAL -->
+    <script>
+        // Navegación entre pestañas
+        function switchTab(tabId) {
+            const tabs = ['tab1', 'tab2', 'tab3', 'tab4', 'tab5'];
+            tabs.forEach(id => {
+                const sec = document.getElementById('sec-' + id);
+                const nav = document.getElementById('nav-' + id);
+                if (sec) sec.classList.add('hidden');
+                if (nav) nav.classList.remove('active');
+            });
+
+            const activeSec = document.getElementById('sec-' + tabId);
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeSec) activeSec.classList.remove('hidden');
+            if (activeNav) activeNav.classList.add('active');
+        }
+
+        // Acordeón para soluciones en Trabajo Individual
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.toggle('open');
+            }
+        }
+
+        // Preguntas del Juego Pasapalabra
+        const trivia = [
+            { letter: 'A', question: 'Palabra cuya sílaba tónica es la última y se tilda si termina en N, S o vocal.', answer: 'Aguda' },
+            { letter: 'B', question: 'Consonante que se escribe siempre después de la letra M.', answer: 'B' },
+            { letter: 'C', question: 'Signo de puntuación que separa elementos de una enumeración.', answer: 'Coma' },
+            { letter: 'E', question: 'Palabras cuya sílaba tónica es la antepenúltima y SIEMPRE llevan tilde.', answer: 'Esdrújulas' },
+            { letter: 'G', question: 'Palabra cuya fuerza de voz cae en la penúltima sílaba.', answer: 'Grave' },
+            { letter: 'H', question: 'Letra muda que llevan las formas del verbo haber e hacer.', answer: 'H' }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        function loadQuestion(index) {
+            currentQuestion = index;
+            document.getElementById('gameLetter').textContent = trivia[index].letter;
+            document.getElementById('gameQuestion').textContent = `Con la ${trivia[index].letter}: ${trivia[index].question}`;
+        }
+
+        function checkAnswer(isCorrect) {
+            if (isCorrect) {
+                score += 10;
+                document.getElementById('gameScore').textContent = score;
+            }
+            currentQuestion = (currentQuestion + 1) % trivia.length;
+            loadQuestion(currentQuestion);
+        }
+
+        // Función de Pantalla Completa
+        function toggleFullscreen() {
+            const container = document.getElementById('boardContainer');
+            const icon = document.getElementById('fullscreenIcon');
+            const text = document.getElementById('fullscreenText');
+
+            if (!document.fullscreenElement) {
+                if (container.requestFullscreen) container.requestFullscreen();
+                else if (container.webkitRequestFullscreen) container.webkitRequestFullscreen();
+                else if (container.msRequestFullscreen) container.msRequestFullscreen();
+                if (icon) icon.className = 'fa-solid fa-compress';
+                if (text) text.textContent = 'Salir Pantalla Completa';
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+                if (icon) icon.className = 'fa-solid fa-expand';
+                if (text) text.textContent = 'Pantalla Completa';
+            }
+        }
+    </script>
+</body>
+</html>
